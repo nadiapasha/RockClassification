@@ -4,11 +4,16 @@ import torch
 import torch.nn as nn
 import time
 from transformers import ViTImageProcessor, ViTForImageClassification, AutoConfig
-from util import RockDataset
+from util import RockDataset, mean_f
 from PIL import Image
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 import logging
+
+
+
+
+
 
 
 logging.basicConfig(
@@ -25,7 +30,8 @@ num_classes = 53
 
 base_model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224')
 processor = ViTImageProcessor.from_pretrained('google/vit-base-patch16-224')
-dataset = RockDataset(root_dir='/Users/nadiapasha/ML_prep/projects/RockClassification/Rocks', transform = None, processor = processor)#transform=transform)
+dataset = RockDataset(root_dir='/Users/nadiapasha/ML_prep/projects/Rock/Rocks', transform = None, processor = processor)#transform=transform)
+test_data = RockDataset(root_dir = '/Users/nadiapasha/ML_prep/projects/Rock/test', transform = None, processor = processor )
 
 
 # Load the original configuration
@@ -50,8 +56,9 @@ for param in new_model.classifier.parameters():
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(new_model.parameters(),lr = 0.001)
 
-batch_size = 4
+batch_size = 2
 train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+test_loader = DataLoader(test_data, batch_size=2, shuffle=True)
 
 
 num_epochs = 10
@@ -70,13 +77,15 @@ def main():
     
     global_step = 0
     for epoch in range(num_epochs):
+        losses = []
         for images, labels in train_loader:
-            images['pixel_values'] = images['pixel_values'].squeeze()
+            images['pixel_values'] = images['pixel_values'].squeeze(axis= 1)
             images = images.to(device)
             labels = labels.to(device)
             outputs = new_model(**images)
             logits = outputs.logits
             loss = criterion(logits, labels)
+            losses.append(loss.item())
             #pred = logits.argmax(-1)
             
         #     # Backward pass and optimization
@@ -89,10 +98,25 @@ def main():
 
         # Increment the global step
         global_step += 1
-        print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss.item():.4f}')
+        print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {mean_f(losses):.4f}')
+    
+    
+        new_model.eval()
+        with torch.no_grad():
+            testLosses = []
+            for images, labels in test_loader:
+                images['pixel_values'] = images['pixel_values'].squeeze(axis=1)
+                #print('size:', images.shape)
+                images = images.to(device)
+                labels = labels.to(device)
+                outputs = new_model(**images)
+                logits = outputs.logits
+                testloss = criterion(logits, labels) 
+                testLosses.append(testloss.item())
+        print(f'Epoch [{epoch + 1}/{num_epochs}], Test Loss: {mean_f(testLosses):.4f}')
+        
     new_model.save_pretrained("rock_model")
     processor.save_pretrained('rock_model')
-    
 
 if __name__ == '__main__':
     main()

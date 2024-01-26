@@ -5,7 +5,14 @@ from PIL import Image
 from torch.utils.data import Dataset
 import torch.nn as nn
 
-
+# helper functions:
+def mean_f(l, na=False):
+    if na:
+        l = [a for a in l if a]
+    if isinstance(l, list) and len(l) > 0:
+        return sum(l) / len(l)
+    else:
+        return None
 class RockDataset(Dataset):
     def __init__(self, root_dir, transform, processor):
         self.root_dir = root_dir
@@ -44,6 +51,11 @@ class RockDataset(Dataset):
         
     def __len__(self):
         return len(self.images_data)
+    
+    
+    
+    
+
     
     
     
