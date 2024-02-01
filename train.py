@@ -26,12 +26,12 @@ logging.basicConfig(
 overall_best = float("inf")
 
 parameterization = {'lr':0.01, 'batch_size':4}
-num_classes = 53
+num_classes = 7
 
 base_model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224')
 processor = ViTImageProcessor.from_pretrained('google/vit-base-patch16-224')
-dataset = RockDataset(root_dir='/Users/nadiapasha/ML_prep/projects/Rock/Rocks', transform = None, processor = processor)#transform=transform)
-test_data = RockDataset(root_dir = '/Users/nadiapasha/ML_prep/projects/Rock/test', transform = None, processor = processor )
+dataset = RockDataset(root_dir='/Users/nadiapasha/ML_prep/projects/Rock/train_data', transform = None, processor = processor)#transform=transform)
+test_data = RockDataset(root_dir = '/Users/nadiapasha/ML_prep/projects/Rock/test_data', transform = None, processor = processor )
 
 
 # Load the original configuration
@@ -115,8 +115,8 @@ def main():
                 testLosses.append(testloss.item())
         print(f'Epoch [{epoch + 1}/{num_epochs}], Test Loss: {mean_f(testLosses):.4f}')
         
-    new_model.save_pretrained("rock_model")
-    processor.save_pretrained('rock_model')
+    new_model.save_pretrained("rock_model_small")
+    processor.save_pretrained('rock_model_small')
 
 if __name__ == '__main__':
     main()
