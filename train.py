@@ -30,8 +30,8 @@ num_classes = 7
 
 base_model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224')
 processor = ViTImageProcessor.from_pretrained('google/vit-base-patch16-224')
-dataset = RockDataset(root_dir='/Users/nadiapasha/ML_prep/projects/Rock/train_data', transform = None, processor = processor)#transform=transform)
-test_data = RockDataset(root_dir = '/Users/nadiapasha/ML_prep/projects/Rock/test_data', transform = None, processor = processor )
+dataset = RockDataset(root_dir='train_data', transform = None, processor = processor)
+test_data = RockDataset(root_dir = 'test_data', transform = None, processor = processor )
 
 
 # Load the original configuration
